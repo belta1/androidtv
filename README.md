@@ -38,7 +38,7 @@ Si sale `x11`, mira la sección [Sesión X11](#sesión-x11-no-wayland).
 curl -fsSL https://raw.githubusercontent.com/belta1/androidtv/main/host-setup.sh | sudo bash
 ```
 
-Esto activa el módulo `binder` (Android lo necesita, y queda activo tras reiniciar) y crea la carpeta `/opt/magictv/apks`.
+Esto activa el módulo `binder` (Android lo necesita, y queda activo tras reiniciar) y crea la carpeta `/home/belta1/docker_compose/config/magictv`.
 **Apunta los valores** que imprime al final, por ejemplo:
 
 ```
@@ -49,12 +49,12 @@ Compruébalo con `grep binder /proc/filesystems` (debe mostrar `binder`).
 
 ### Paso 4 — Dejar la APK
 
-La APK va en el **host Ubuntu**, en `/opt/magictv/apks/` (no dentro de ningún contenedor; se monta solo):
+La APK va en el **host Ubuntu**, en `/home/belta1/docker_compose/config/magictv/` (no dentro de ningún contenedor; se monta solo). La carpeta es de tu usuario, no hace falta `sudo`:
 
 ```bash
-sudo cp ~/Descargas/MagicTV.apk /opt/magictv/apks/
-sudo chmod 644 /opt/magictv/apks/*.apk
-ls -l /opt/magictv/apks
+cp ~/Descargas/MagicTV.apk /home/belta1/docker_compose/config/magictv/
+chmod 644 /home/belta1/docker_compose/config/magictv/*.apk
+ls -l /home/belta1/docker_compose/config/magictv
 ```
 
 - El nombre del archivo da igual, pero debe terminar en `.apk` (no `.xapk` ni `.zip`).
@@ -111,7 +111,7 @@ Pulsa **Deploy the stack**. Portainer descarga `redroid/redroid` (~1 GB) y `ghcr
 |---|---|---|
 | `HOST_UID` / `HOST_GID` | `1000` | Usuario del escritorio (dueño de los sockets de pantalla y audio) |
 | `RENDER_GID` | `993` | `getent group render` — acceso a la GPU para dibujar |
-| `APK_DIR` | `/opt/magictv/apks` | Carpeta del host con los `.apk` (se instalan/actualizan al arrancar) |
+| `APK_DIR` | `/home/belta1/docker_compose/config/magictv` | Carpeta del host con los `.apk` (se instalan/actualizan al arrancar) |
 | `WIDTH` / `HEIGHT` / `DPI` | `1920` / `1080` / `240` | Pantalla de Android |
 | `FPS` | `60` | Tope de fps |
 | `MAX_SIZE` | `1920` | Lado máximo del vídeo |

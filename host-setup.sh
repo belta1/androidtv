@@ -11,8 +11,10 @@ modprobe binder_linux devices="binder,hwbinder,vndbinder"
 echo "binder_linux" > /etc/modules-load.d/redroid.conf
 echo 'options binder_linux devices="binder,hwbinder,vndbinder"' > /etc/modprobe.d/redroid.conf
 
-mkdir -p /opt/magictv/apks
+APK_DIR=/home/belta1/docker_compose/config/magictv
+mkdir -p "$APK_DIR"
+chown "${SUDO_USER:-belta1}:" "$APK_DIR" 2>/dev/null || true
 
-grep -q binder /proc/filesystems && echo "OK: binder available. Copy the Magic TV .apk to /opt/magictv/apks"
+grep -q binder /proc/filesystems && echo "OK: binder available. Copy the Magic TV .apk to /home/belta1/docker_compose/config/magictv"
 echo "Portainer stack variables for this host:"
 echo "  HOST_UID=$(id -u "${SUDO_USER:-1000}" 2>/dev/null || echo 1000)  HOST_GID=$(id -g "${SUDO_USER:-1000}" 2>/dev/null || echo 1000)  RENDER_GID=$(getent group render | cut -d: -f3)"
