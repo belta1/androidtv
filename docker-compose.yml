@@ -19,46 +19,26 @@ services:
     # devices:
     #   - /dev/dri:/dev/dri
     mem_limit: ${ANDROID_MEM:-2g}
-
-  viewer:
+  # Keeps the APKs installed on the shared Android. The windows are opened per
+  # desktop user by the `magictv` command (see host-setup.sh), same image.
+  installer:
     image: ghcr.io/belta1/androidtv-viewer:latest
-    container_name: magictv-viewer
+    container_name: magictv-installer
     restart: unless-stopped
     depends_on:
       - android
-    # Runs as the desktop user so it can use their Wayland/X11 and audio sockets
-    user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
-    group_add:
-      - "44"                      # video
-      - "${RENDER_GID:-993}"      # render (getent group render)
     environment:
+      - MODE=service
       - ANDROID_HOST=android:5555
-      - XDG_RUNTIME_DIR=/run/user/${HOST_UID:-1000}
-      - WAYLAND_DISPLAY=${WAYLAND_DISPLAY:-wayland-0}
-      - DISPLAY=${DISPLAY:-:0}
-      - MAX_SIZE=${MAX_SIZE:-1920}
-      - FPS=${FPS:-60}
-      - VIDEO_BITRATE=${VIDEO_BITRATE:-8M}
-      - APP_PACKAGE=${APP_PACKAGE:-}
-      - AUTOSTART=${AUTOSTART:-true}
-      - FULLSCREEN=${FULLSCREEN:-false}
-      - WINDOW_WIDTH=${WINDOW_WIDTH:-1280}
-      - WINDOW_HEIGHT=${WINDOW_HEIGHT:-720}
     volumes:
       - ${APK_DIR:-/home/belta1/docker_compose/config/magictv}:/apks:ro
-      - viewer-state:/state
-      # /run/user (not /run/user/1000) so it works even if the container
-      # starts before login; rslave makes the session tmpfs visible later
-      - type: bind
-        source: /run/user
-        target: /run/user
-        bind:
-          propagation: rslave
-      - /tmp/.X11-unix:/tmp/.X11-unix:ro
-    devices:
-      - /dev/dri:/dev/dri
-    mem_limit: ${VIEWER_MEM:-384m}
+      - installer-state:/state
+    mem_limit: 64m
+
+networks:
+  default:
+    name: magictv     # fixed name: `magictv` windows join it to reach "android"
 
 volumes:
   android-data:
-  viewer-state:
+  installer-state:
