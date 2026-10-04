@@ -1,0 +1,89 @@
+guest@jfubuntu:~$ magictv
+[magictv] display: wayland
+[magictv] connected to android:5555 (x86_64,arm64-v8a,x86,armeabi-v7a,armeabi)
+[magictv] starting com.blackboxtv.magictvs
+Couldn't open plugin directory: No such file or directory
+No plugins found, falling back on no decorations
+/opt/scrcpy/scrcpy-server: 1 file pushed, 0 skipped. 48.1 MB/s (733706 bytes in 0.015s)
+[server] INFO: Device: [redroid] redroid redroid12_x86_64 (Android 12)
+[server] ERROR: Could not create default audio encoder for opus
+List of audio encoders:
+    --audio-codec=aac --audio-encoder=OMX.google.aac.encoder          (hybrid)
+    --audio-codec=flac --audio-encoder=OMX.google.flac.encoder        (hybrid)
+[server] ERROR: Exception on thread Thread[audio-encoder,5,main]
+java.lang.IllegalArgumentException: Failed to initialize audio/opus, error 0xfffffffe
+	at android.media.MediaCodec.native_setup(Native Method)
+	at android.media.MediaCodec.<init>(MediaCodec.java:1961)
+	at android.media.MediaCodec.createEncoderByType(MediaCodec.java:1923)
+	at com.genymobile.scrcpy.audio.AudioEncoder.createMediaCodec(AudioEncoder.java:340)
+	at com.genymobile.scrcpy.audio.AudioEncoder.encode(AudioEncoder.java:220)
+	at com.genymobile.scrcpy.audio.AudioEncoder.lambda$start$0$com-genymobile-scrcpy-audio-AudioEncoder(AudioEncoder.java:158)
+	at com.genymobile.scrcpy.audio.AudioEncoder$$ExternalSyntheticLambda4.run(D8$$SyntheticClass:0)
+	at java.lang.Thread.run(Thread.java:920)
+Killed 
+WARN: Could not set window icon: wayland: cannot set icon; required xdg_toplevel_icon_v1 protocol not supported
+ERROR: Demuxer 'audio': stream configuration error on the device
+WARN: Device disconnected
+scrcpy 4.1 <https://github.com/Genymobile/scrcpy>
+INFO: ADB device found:
+INFO:     --> (tcpip)  android:5555                    device  redroid12_x86_64
+INFO: Renderer: opengl
+INFO: OpenGL version: 4.6 (Compatibility Profile) Mesa 22.3.6
+INFO: Trilinear filtering enabled
+[magictv] scrcpy exited (2), retrying in 3s
+[magictv] connected to android:5555 (x86_64,arm64-v8a,x86,armeabi-v7a,armeabi)
+Couldn't open plugin directory: No such file or directory
+No plugins found, falling back on no decorations
+/opt/scrcpy/scrcpy-server: 1 file pushed, 0 skipped. 460.3 MB/s (733706 bytes in 0.002s)
+[server] INFO: Device: [redroid] redroid redroid12_x86_64 (Android 12)
+[server] ERROR: Could not create default audio encoder for opus
+List of audio encoders:
+    --audio-codec=aac --audio-encoder=OMX.google.aac.encoder          (hybrid)
+    --audio-codec=flac --audio-encoder=OMX.google.flac.encoder        (hybrid)
+[server] ERROR: Exception on thread Thread[audio-encoder,5,main]
+java.lang.IllegalArgumentException: Failed to initialize audio/opus, error 0xfffffffe
+	at android.media.MediaCodec.native_setup(Native Method)
+	at android.media.MediaCodec.<init>(MediaCodec.java:1961)
+	at android.media.MediaCodec.createEncoderByType(MediaCodec.java:1923)
+	at com.genymobile.scrcpy.audio.AudioEncoder.createMediaCodec(AudioEncoder.java:340)
+	at com.genymobile.scrcpy.audio.AudioEncoder.encode(AudioEncoder.java:220)
+	at com.genymobile.scrcpy.audio.AudioEncoder.lambda$start$0$com-genymobile-scrcpy-audio-AudioEncoder(AudioEncoder.java:158)
+	at com.genymobile.scrcpy.audio.AudioEncoder$$ExternalSyntheticLambda4.run(D8$$SyntheticClass:0)
+	at java.lang.Thread.run(Thread.java:920)
+Killed 
+WARN: Could not set window icon: wayland: cannot set icon; required xdg_toplevel_icon_v1 protocol not supported
+WARN: Device disconnected
+ERROR: Demuxer 'audio': stream configuration error on the device
+scrcpy 4.1 <https://github.com/Genymobile/scrcpy>
+INFO: ADB device found:
+INFO:     --> (tcpip)  android:5555                    device  redroid12_x86_64
+INFO: Renderer: opengl
+INFO: OpenGL version: 4.6 (Compatibility Profile) Mesa 22.3.6
+INFO: Trilinear filtering enabled
+[magictv] scrcpy exited (2), retrying in 3s
+[magictv] connected to android:5555 (x86_64,arm64-v8a,x86,armeabi-v7a,armeabi)
+Couldn't open plugin directory: No such file or directory
+No plugins found, falling back on no decorations
+/opt/scrcpy/scrcpy-server: 1 file pushed, 0 skipped. 362.7 MB/s (733706 bytes in 0.002s)
+[server] INFO: Device: [redroid] redroid redroid12_x86_64 (Android 12)
+[server] ERROR: Could not create default audio encoder for opus
+List of audio encoders:
+    --audio-codec=aac --audio-encoder=OMX.google.aac.encoder          (hybrid)
+    --audio-codec=flac --audio-encoder=OMX.google.flac.encoder        (hybrid)
+[server] ERROR: Exception on thread Thread[audio-encoder,5,main]
+java.lang.IllegalArgumentException: Failed to initialize audio/opus, error 0xfffffffe
+	at android.media.MediaCodec.native_setup(Native Method)
+	at android.media.MediaCodec.<init>(MediaCodec.java:1961)
+	at android.media.MediaCodec.createEncoderByType(MediaCodec.java:1923)
+	at com.genymobile.scrcpy.audio.AudioEncoder.createMediaCodec(AudioEncoder.java:340)
+	at com.genymobile.scrcpy.audio.AudioEncoder.encode(AudioEncoder.java:220)
+	at com.genymobile.scrcpy.audio.AudioEncoder.lambda$start$0$com-genymobile-scrcpy-audio-AudioEncoder(AudioEncoder.java:158)
+	at com.genymobile.scrcpy.audio.AudioEncoder$$ExternalSyntheticLambda4.run(D8$$SyntheticClass:0)
+	at java.lang.Thread.run(Thread.java:920)
+Killed 
+ERROR: Could not retrieve device information
+ERROR: Server connection failed
+scrcpy 4.1 <https://github.com/Genymobile/scrcpy>
+INFO: ADB device found:
+INFO:     --> (tcpip)  android:5555                    device  redroid12_x86_64
+[magictv] scrcpy failed (1), giving up

@@ -11,6 +11,7 @@ ANDROID_HOST="${ANDROID_HOST:-android:5555}"
 MAX_SIZE="${MAX_SIZE:-1920}"
 FPS="${FPS:-60}"
 VIDEO_BITRATE="${VIDEO_BITRATE:-8M}"
+AUDIO_CODEC="${AUDIO_CODEC:-aac}"
 FULLSCREEN="${FULLSCREEN:-false}"
 WINDOW_WIDTH="${WINDOW_WIDTH:-1280}"
 WINDOW_HEIGHT="${WINDOW_HEIGHT:-720}"
@@ -100,7 +101,8 @@ run_window() {
   wait_for_android 180 || exit 1
 
   local audio_args=(--no-audio)
-  [ -n "$PULSE_SERVER" ] && audio_args=(--audio-codec opus --audio-buffer 60)
+  # redroid only ships AAC/FLAC audio encoders (no Opus)
+  [ -n "$PULSE_SERVER" ] && audio_args=(--audio-codec "$AUDIO_CODEC" --audio-buffer 60)
   local window_args=(--window-width "$WINDOW_WIDTH" --window-height "$WINDOW_HEIGHT")
   [ "$FULLSCREEN" = "true" ] && window_args=(--fullscreen)
   local pkg start_args=()
@@ -123,6 +125,11 @@ run_window() {
     [ $rc -eq 0 ] && exit 0
     tries=$((tries + 1))
     [ $tries -ge 3 ] && { log "scrcpy failed ($rc), giving up"; exit $rc; }
+    # Audio capture/encoding is the usual culprit: keep the picture working
+    if [ "${audio_args[0]}" != "--no-audio" ]; then
+      log "retrying without audio"
+      audio_args=(--no-audio)
+    fi
     log "scrcpy exited ($rc), retrying in 3s"
     sleep 3
     wait_for_android 60 || exit 1

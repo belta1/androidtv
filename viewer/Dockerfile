@@ -8,7 +8,7 @@ ARG SCRCPY_SHA256=ad56ae8bfeedf41e824945c11dbf55fcb092b3e615b9b486f48a50e30d3896
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
       ca-certificates curl \
-      libwayland-client0 libwayland-cursor0 libwayland-egl1 libdecor-0-0 libxkbcommon0 \
+      libwayland-client0 libwayland-cursor0 libwayland-egl1 libdecor-0-0 libdecor-0-plugin-1-cairo libxkbcommon0 \
       libx11-6 libx11-xcb1 libxext6 libxrandr2 libxcursor1 libxi6 libxfixes3 libxss1 \
       libegl1 libgl1 libgles2 libgbm1 libdrm2 libgl1-mesa-dri \
       libpulse0 \

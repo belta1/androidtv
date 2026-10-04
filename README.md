@@ -13,6 +13,41 @@ stack Portainer "magictv"                                  sesión de cada usuar
 
 Todos los usuarios ven **el mismo Android** (misma app, mismo login). Si dos usuarios lo abren a la vez, ven y controlan la misma pantalla.
 
+## Primera ejecución (resumen)
+
+Haz estos pasos en orden; el detalle de cada uno está en [Primer setup paso a paso](#primer-setup-paso-a-paso).
+
+**A. En tu PC (una vez)** — publicar el código y la imagen:
+```bash
+git add . && git commit -m "Magic TV container" && git push -u origin main
+```
+Espera a que GitHub → **Actions** → *Build viewer image* termine en ✅ y pon el paquete `androidtv-viewer` como **Public**.
+
+**B. En el Ubuntu, como administrador (una vez):**
+```bash
+# 1. Preparar el host: kernel, carpeta de APKs, comando e icono para todos los usuarios
+curl -fsSL https://raw.githubusercontent.com/belta1/androidtv/main/host-setup.sh | sudo bash
+
+# 2. Dejar la APK
+cp ~/Descargas/MagicTV.apk /home/belta1/docker_compose/config/magictv/
+```
+
+**C. En Portainer (una vez):** Stacks → Add stack → Repository →
+URL `https://github.com/belta1/androidtv`, ref `refs/heads/main`, path `docker-compose.yml` → **Deploy the stack**.
+
+**D. Esperar a que Android arranque e instale la APK (1–2 min):**
+```bash
+docker logs -f magictv-installer     # espera a ver "Success", luego Ctrl+C
+```
+
+**E. Abrir Magic TV (cualquier usuario, siempre):** menú de aplicaciones → **Magic TV**, o en una terminal:
+```bash
+magictv
+```
+La primera vez, inicia sesión dentro de la app; queda guardado para todos.
+
+A partir de aquí no hay que repetir nada: tras reiniciar el equipo, Docker vuelve a levantar Android solo, y cada usuario solo tiene que hacer el paso **E**.
+
 ## Primer setup paso a paso
 
 ### Paso 1 — Publicar la imagen en GitHub (una vez, desde tu PC)
@@ -126,6 +161,7 @@ Controles: ratón = toque, clic derecho = **Atrás**, clic central = **Inicio**,
 | `MAX_SIZE` | `1920` | Lado máximo del vídeo |
 | `FPS` | `60` | Tope de fps |
 | `VIDEO_BITRATE` | `8M` | Bitrate H.264 |
+| `AUDIO_CODEC` | `aac` | `aac` o `flac` (redroid no tiene Opus) |
 | `APP_PACKAGE` | autodetectado | Paquete a abrir (si hay varios APKs) |
 
 **Android** — variables del stack en Portainer:
