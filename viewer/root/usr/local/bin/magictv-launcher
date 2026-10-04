@@ -1,0 +1,107 @@
+#!/bin/bash
+# Connects to the redroid container, installs APKs from /apks and shows the
+# screen (video + audio) with scrcpy directly on the host's desktop session.
+# Loops forever: waits for the user to log in, for Android to boot, and
+# restarts scrcpy if it exits.
+
+ANDROID_HOST="${ANDROID_HOST:-android:5555}"
+MAX_SIZE="${MAX_SIZE:-1920}"
+FPS="${FPS:-60}"
+VIDEO_BITRATE="${VIDEO_BITRATE:-8M}"
+export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+WAYLAND_DISPLAY="${WAYLAND_DISPLAY:-wayland-0}"
+DISPLAY="${DISPLAY:-:0}"
+APK_DIR="/apks"
+STATE_DIR="$HOME/installed"
+mkdir -p "$STATE_DIR"
+
+log() { echo "[magictv] $*"; }
+
+# Waits until the host user's desktop session is up and picks Wayland or X11.
+wait_for_display() {
+  unset PULSE_SERVER
+  while true; do
+    if [ -S "$XDG_RUNTIME_DIR/$WAYLAND_DISPLAY" ]; then
+      export WAYLAND_DISPLAY SDL_VIDEO_DRIVER=wayland
+      unset DISPLAY
+      break
+    elif [ -S "/tmp/.X11-unix/X${DISPLAY#:}" ]; then
+      export DISPLAY SDL_VIDEO_DRIVER=x11
+      unset WAYLAND_DISPLAY
+      break
+    fi
+    log "waiting for desktop session ($XDG_RUNTIME_DIR/$WAYLAND_DISPLAY or X$DISPLAY) ..."
+    sleep 5
+  done
+  if [ -S "$XDG_RUNTIME_DIR/pulse/native" ]; then
+    export PULSE_SERVER="unix:$XDG_RUNTIME_DIR/pulse/native"
+  else
+    log "no PulseAudio/PipeWire socket found, audio disabled"
+  fi
+  log "display: $SDL_VIDEO_DRIVER"
+  return 0
+}
+
+wait_for_android() {
+  until adb connect "$ANDROID_HOST" 2>/dev/null | grep -q "connected"; do
+    log "waiting for $ANDROID_HOST ..."
+    sleep 3
+  done
+  until [ "$(adb -s "$ANDROID_HOST" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" = "1" ]; do
+    log "waiting for Android boot ..."
+    sleep 3
+  done
+  log "connected to $ANDROID_HOST ($(adb -s "$ANDROID_HOST" shell getprop ro.product.cpu.abilist | tr -d '\r'))"
+}
+
+install_apks() {
+  shopt -s nullglob
+  for apk in "$APK_DIR"/*.apk; do
+    name="$(basename "$apk")"
+    sum="$(sha256sum "$apk" | cut -d' ' -f1)"
+    if [ "$(cat "$STATE_DIR/$name.sha256" 2>/dev/null)" = "$sum" ] \
+       && [ -n "$(adb -s "$ANDROID_HOST" shell pm list packages -3 | tr -d '\r')" ]; then
+      continue
+    fi
+    log "installing $name ..."
+    if adb -s "$ANDROID_HOST" install -r -g "$apk"; then
+      echo "$sum" > "$STATE_DIR/$name.sha256"
+    else
+      log "failed to install $name"
+    fi
+  done
+}
+
+detect_package() {
+  if [ -n "$APP_PACKAGE" ]; then
+    echo "$APP_PACKAGE"
+  else
+    adb -s "$ANDROID_HOST" shell pm list packages -3 | tr -d '\r' | head -n1 | sed 's/^package://'
+  fi
+}
+
+audio_args=()
+while true; do
+  wait_for_android
+  install_apks
+  wait_for_display
+  [ -z "$PULSE_SERVER" ] && audio_args=(--no-audio) || audio_args=(--audio-codec opus --audio-buffer 60)
+
+  pkg="$(detect_package)"
+  start_args=()
+  [ -n "$pkg" ] && start_args=(--start-app="$pkg") && log "starting $pkg"
+
+  scrcpy -s "$ANDROID_HOST" \
+    --window-title "Magic TV" \
+    --fullscreen \
+    --max-size "$MAX_SIZE" \
+    --max-fps "$FPS" \
+    --video-codec h264 \
+    --video-bit-rate "$VIDEO_BITRATE" \
+    --video-buffer 0 \
+    "${audio_args[@]}" \
+    "${start_args[@]}"
+
+  log "scrcpy exited, restarting in 3s"
+  sleep 3
+done

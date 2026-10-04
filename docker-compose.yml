@@ -1,0 +1,60 @@
+name: magictv
+
+services:
+  android:
+    image: redroid/redroid:12.0.0-latest
+    container_name: magictv-android
+    privileged: true
+    restart: unless-stopped
+    command:
+      - androidboot.redroid_width=${WIDTH:-1920}
+      - androidboot.redroid_height=${HEIGHT:-1080}
+      - androidboot.redroid_dpi=${DPI:-240}
+      - androidboot.redroid_fps=${FPS:-60}
+      - androidboot.redroid_gpu_mode=${GPU_MODE:-guest}
+      - ro.setupwizard.mode=DISABLED
+    volumes:
+      - android-data:/data
+    # GPU_MODE=host: uncomment to use the host's Intel/AMD iGPU (much lower CPU)
+    # devices:
+    #   - /dev/dri:/dev/dri
+    mem_limit: ${ANDROID_MEM:-2g}
+
+  viewer:
+    image: ghcr.io/belta1/androidtv-viewer:latest
+    container_name: magictv-viewer
+    restart: unless-stopped
+    depends_on:
+      - android
+    # Runs as the desktop user so it can use their Wayland/X11 and audio sockets
+    user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
+    group_add:
+      - "44"                      # video
+      - "${RENDER_GID:-993}"      # render (getent group render)
+    environment:
+      - ANDROID_HOST=android:5555
+      - XDG_RUNTIME_DIR=/run/user/${HOST_UID:-1000}
+      - WAYLAND_DISPLAY=${WAYLAND_DISPLAY:-wayland-0}
+      - DISPLAY=${DISPLAY:-:0}
+      - MAX_SIZE=${MAX_SIZE:-1920}
+      - FPS=${FPS:-60}
+      - VIDEO_BITRATE=${VIDEO_BITRATE:-8M}
+      - APP_PACKAGE=${APP_PACKAGE:-}
+    volumes:
+      - ${APK_DIR:-/opt/magictv/apks}:/apks:ro
+      - viewer-state:/state
+      # /run/user (not /run/user/1000) so it works even if the container
+      # starts before login; rslave makes the session tmpfs visible later
+      - type: bind
+        source: /run/user
+        target: /run/user
+        bind:
+          propagation: rslave
+      - /tmp/.X11-unix:/tmp/.X11-unix:ro
+    devices:
+      - /dev/dri:/dev/dri
+    mem_limit: ${VIEWER_MEM:-384m}
+
+volumes:
+  android-data:
+  viewer-state:
