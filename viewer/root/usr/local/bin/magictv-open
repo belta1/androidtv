@@ -1,0 +1,3 @@
+#!/bin/sh
+# Asks the running launcher to open the Magic TV window (used by the desktop icon).
+touch "${HOME:-/state}/open-request"

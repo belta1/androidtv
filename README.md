@@ -38,7 +38,7 @@ Si sale `x11`, mira la sección [Sesión X11](#sesión-x11-no-wayland).
 curl -fsSL https://raw.githubusercontent.com/belta1/androidtv/main/host-setup.sh | sudo bash
 ```
 
-Esto activa el módulo `binder` (Android lo necesita, y queda activo tras reiniciar) y crea la carpeta `/home/belta1/docker_compose/config/magictv`.
+Esto activa el módulo `binder` (Android lo necesita, y queda activo tras reiniciar), crea la carpeta `/home/belta1/docker_compose/config/magictv`, añade tu usuario al grupo `docker` e instala el icono **Magic TV** en el menú de aplicaciones. **Cierra sesión y vuelve a entrar** una vez para que el grupo y el icono se apliquen.
 **Apunta los valores** que imprime al final, por ejemplo:
 
 ```
@@ -93,7 +93,7 @@ Pulsa **Deploy the stack**. Portainer descarga `redroid/redroid` (~1 GB) y `ghcr
    [magictv] display: wayland
    [magictv] starting com.xxx.magictv
    ```
-3. Magic TV aparece a pantalla completa con sonido. Inicia sesión en la app una vez: queda guardado en el volumen `android-data`.
+3. Magic TV se abre en una **ventana** del escritorio (1280×720, redimensionable) con sonido. Inicia sesión en la app una vez: queda guardado en el volumen `android-data`.
 
 ### Paso 7 — Si algo falla
 
@@ -119,6 +119,9 @@ Pulsa **Deploy the stack**. Portainer descarga `redroid/redroid` (~1 GB) y `ghcr
 | `GPU_MODE` | `guest` | **Recomendado `host`** con iGPU Intel/AMD: descomentar `/dev/dri` en el servicio `android`. Reduce mucho la CPU a 1080p60. No funciona con NVIDIA. |
 | `WAYLAND_DISPLAY` / `DISPLAY` | `wayland-0` / `:0` | Se usa Wayland si existe el socket, si no X11 |
 | `APP_PACKAGE` | autodetectado | Paquete a abrir (si hay varios APKs) |
+| `AUTOSTART` | `true` | Abrir la ventana al iniciar sesión. `false` = solo desde el icono |
+| `FULLSCREEN` | `false` | `true` para abrir a pantalla completa |
+| `WINDOW_WIDTH` / `WINDOW_HEIGHT` | `1280` / `720` | Tamaño inicial de la ventana |
 
 ### Sesión X11 (no Wayland)
 
@@ -128,9 +131,13 @@ Ubuntu usa Wayland por defecto. Si el escritorio es X11 (p. ej. con NVIDIA), aut
 xhost +SI:localuser:$(id -un)
 ```
 
-## Controles
+## Uso como aplicación
 
-Ratón = toque, clic derecho = **Atrás**, clic central = **Inicio**, teclado normal. `Alt+F` sale/entra de pantalla completa. Si se cierra la ventana, vuelve a abrirse en 3 s (`docker stop magictv-viewer` para cerrarla del todo).
+- **Abrir:** icono **Magic TV** en el menú de aplicaciones (puedes anclarlo al dock con clic derecho → *Añadir a favoritos*). Si `AUTOSTART=true`, también se abre al iniciar sesión.
+- **Cerrar:** cierra la ventana normalmente. Android sigue encendido en segundo plano, así que reabrirla es instantáneo.
+- **Apagar del todo:** `docker stop magictv-viewer magictv-android` (o desde Portainer).
+
+Controles: ratón = toque, clic derecho = **Atrás**, clic central = **Inicio**, teclado normal, `Alt+F` = pantalla completa.
 
 ## Diagnóstico
 

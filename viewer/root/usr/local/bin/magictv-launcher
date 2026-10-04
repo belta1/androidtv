@@ -1,16 +1,24 @@
 #!/bin/bash
 # Connects to the redroid container, installs APKs from /apks and shows the
 # screen (video + audio) with scrcpy directly on the host's desktop session.
-# Loops forever: waits for the user to log in, for Android to boot, and
-# restarts scrcpy if it exits.
+# Behaves like a desktop app: opens a window when the session starts (AUTOSTART),
+# stays closed when the user closes it until `magictv-open` is run, and retries
+# on errors (logout, Android reboot).
 
 ANDROID_HOST="${ANDROID_HOST:-android:5555}"
 MAX_SIZE="${MAX_SIZE:-1920}"
 FPS="${FPS:-60}"
 VIDEO_BITRATE="${VIDEO_BITRATE:-8M}"
 export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
-WAYLAND_DISPLAY="${WAYLAND_DISPLAY:-wayland-0}"
-DISPLAY="${DISPLAY:-:0}"
+WL_NAME="${WAYLAND_DISPLAY:-wayland-0}"
+X_NAME="${DISPLAY:-:0}"
+FULLSCREEN="${FULLSCREEN:-false}"
+WINDOW_WIDTH="${WINDOW_WIDTH:-1280}"
+WINDOW_HEIGHT="${WINDOW_HEIGHT:-720}"
+AUTOSTART="${AUTOSTART:-true}"
+OPEN_REQUEST="$HOME/open-request"
+# Window/app id so GNOME groups it under the "Magic TV" launcher icon
+export SDL_APP_ID=magictv
 APK_DIR="/apks"
 STATE_DIR="$HOME/installed"
 mkdir -p "$STATE_DIR"
@@ -21,16 +29,16 @@ log() { echo "[magictv] $*"; }
 wait_for_display() {
   unset PULSE_SERVER
   while true; do
-    if [ -S "$XDG_RUNTIME_DIR/$WAYLAND_DISPLAY" ]; then
-      export WAYLAND_DISPLAY SDL_VIDEO_DRIVER=wayland
+    if [ -S "$XDG_RUNTIME_DIR/$WL_NAME" ]; then
+      export WAYLAND_DISPLAY="$WL_NAME" SDL_VIDEO_DRIVER=wayland
       unset DISPLAY
       break
-    elif [ -S "/tmp/.X11-unix/X${DISPLAY#:}" ]; then
-      export DISPLAY SDL_VIDEO_DRIVER=x11
+    elif [ -S "/tmp/.X11-unix/X${X_NAME#:}" ]; then
+      export DISPLAY="$X_NAME" SDL_VIDEO_DRIVER=x11
       unset WAYLAND_DISPLAY
       break
     fi
-    log "waiting for desktop session ($XDG_RUNTIME_DIR/$WAYLAND_DISPLAY or X$DISPLAY) ..."
+    log "waiting for desktop session ($XDG_RUNTIME_DIR/$WL_NAME or X$X_NAME) ..."
     sleep 5
   done
   if [ -S "$XDG_RUNTIME_DIR/pulse/native" ]; then
@@ -80,7 +88,31 @@ detect_package() {
   fi
 }
 
+session_up() {
+  [ -S "$XDG_RUNTIME_DIR/$WL_NAME" ] || [ -S "/tmp/.X11-unix/X${X_NAME#:}" ]
+}
+
+# Blocks until `magictv-open` is run (desktop icon), or until a new desktop
+# session starts while AUTOSTART=true.
+wait_for_open_request() {
+  local session_ended=0
+  rm -f "$OPEN_REQUEST"
+  log "closed; waiting for open request"
+  while [ ! -e "$OPEN_REQUEST" ]; do
+    if ! session_up; then
+      session_ended=1
+    elif [ $session_ended -eq 1 ] && [ "$AUTOSTART" = "true" ]; then
+      log "new desktop session"
+      return
+    fi
+    sleep 1
+  done
+  rm -f "$OPEN_REQUEST"
+}
+
 audio_args=()
+rm -f "$OPEN_REQUEST"
+[ "$AUTOSTART" = "true" ] || wait_for_open_request
 while true; do
   wait_for_android
   install_apks
@@ -91,17 +123,26 @@ while true; do
   start_args=()
   [ -n "$pkg" ] && start_args=(--start-app="$pkg") && log "starting $pkg"
 
+  window_args=(--window-width "$WINDOW_WIDTH" --window-height "$WINDOW_HEIGHT")
+  [ "$FULLSCREEN" = "true" ] && window_args=(--fullscreen)
+
   scrcpy -s "$ANDROID_HOST" \
     --window-title "Magic TV" \
-    --fullscreen \
+    "${window_args[@]}" \
     --max-size "$MAX_SIZE" \
     --max-fps "$FPS" \
     --video-codec h264 \
     --video-bit-rate "$VIDEO_BITRATE" \
-    --video-buffer 0 \
     "${audio_args[@]}" \
     "${start_args[@]}"
+  rc=$?
 
-  log "scrcpy exited, restarting in 3s"
-  sleep 3
+  if [ $rc -eq 0 ]; then
+    # Window closed by the user: stay closed until the launcher icon asks again
+    log "window closed"
+    wait_for_open_request
+  else
+    log "scrcpy exited ($rc), retrying in 3s"
+    sleep 3
+  fi
 done

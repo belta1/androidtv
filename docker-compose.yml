@@ -40,6 +40,10 @@ services:
       - FPS=${FPS:-60}
       - VIDEO_BITRATE=${VIDEO_BITRATE:-8M}
       - APP_PACKAGE=${APP_PACKAGE:-}
+      - AUTOSTART=${AUTOSTART:-true}
+      - FULLSCREEN=${FULLSCREEN:-false}
+      - WINDOW_WIDTH=${WINDOW_WIDTH:-1280}
+      - WINDOW_HEIGHT=${WINDOW_HEIGHT:-720}
     volumes:
       - ${APK_DIR:-/home/belta1/docker_compose/config/magictv}:/apks:ro
       - viewer-state:/state

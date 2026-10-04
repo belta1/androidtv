@@ -24,7 +24,7 @@ RUN apt-get update \
  && mkdir -p /state && chmod 1777 /state
 
 COPY root/ /
-RUN chmod +x /usr/local/bin/magictv-launcher
+RUN chmod +x /usr/local/bin/magictv-launcher /usr/local/bin/magictv-open
 
 ENV HOME=/state
 CMD ["/usr/local/bin/magictv-launcher"]
